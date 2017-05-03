@@ -42,8 +42,8 @@ var poolConfig = {
 
 //create LUIS recognizer that points at our model and add it as a root '/' dialog
 var model = 'https://westus.api.cognitive.microsoft.com/luis/v2.0/apps/b23f5c98-8066-4fbe-b512-0c1e3d19f983?subscription-key=8a6d7ac6787c4537aab3095d94985a35&verbose=true&timezoneOffset=0.0&q=';
-var recognizer = new builder.LuisRecognizer(model);
-var dialog = new builder.IntentDialog({ recognizers: [recognizer]});
+// var recognizer = new builder.LuisRecognizer(model);
+// var dialog = new builder.IntentDialog({ recognizers: [recognizer]});
 
 var msg = " ";
 var greeted = 0;
@@ -62,88 +62,41 @@ var bot = new builder.UniversalBot(connector, function(session) {
             });
     } else {
         session.send('try sending the audio file or text file');
-        bot.dialog('/', dialog);
-    }
+        var recognizer = new builder.LuisRecognizer(model);
+        var dialog = new builder.IntentDialog({ recognizers: [recognizer]});
+        // bot.dialog('/', dialog);
+        
 
-});
+// bot.on('conversationUpdate', function (message) {
+//     if (message.membersAdded) {
+//         message.membersAdded.forEach(function (identity) {
+//             if (identity.id === message.address.bot.id) {
+//                 // var reply = new builder.Message()
+//                 //     .address(message.address)
+//                 //     .text('Hi! I am SpeechToText Bot. I can understand the content of any audio and convert it to text. Try sending me a wav file.');
+//                 // bot.send(reply);
+//                 dialog.onBegin(function (session, args, next) {
+//                     msg = new builder.Message(session)
+//                             .textFormat(builder.TextFormat.xml)
+//                             .attachments([
+//                                     new builder.HeroCard(session)
+//                             .title("Welcome to Meet Accenture Talent for Engagement (MATE)")
+//                             .subtitle("I am a Smart resource management Bot")
+//                             .text("The smart resource management Bot is a intelligent bot for PMs/SAs/TAs or TFS/Scheduler for resource management")
+//                             .images([
+//                                 builder.CardImage.create(session, "https://thumbs.dreamstime.com/z/teamwork-handle-group-logo-22538327.jpg")
+//                             ])
+//                             .tap(builder.CardAction.openUrl(session, "https://en.wikipedia.org/wiki/Space_Needle"))
+//                     ]);
+//                     bot.send(msg);
+//                 });
+//             }
+//         });
+//     }
+// });
 
-//=========================================================
-// Utilities
-//=========================================================
-function hasAudioAttachment(session) {
-    return session.message.attachments.length > 0 &&
-        (session.message.attachments[0].contentType === 'audio/wav' ||
-            session.message.attachments[0].contentType === 'application/octet-stream');
-}
 
-function getAudioStreamFromMessage (message){
-    var headers = {};
-    var attachment = message.attachments[0];
 
-    if (checkRequiresToken(message)) {
-
-        connector.getAccessToken(function(error, token){
-           
-            headers['Authorization']='Bearer ' + token;
-            headers['Content-Type'] ='application/octet-stream';
-
-            return needle.get(attachment.contentUrl, {headers : headers});
-        });
-    }
-    headers['Content-Type'] = attachment.contentType;
-    return needle.get(attachment.contentUrl, {headers : headers});
-}
-
-function checkRequiresToken(message) {
-    return message.source === 'skype' || message.source === 'msteams';
-}
-
-function processText(text) {
-    var result = 'You said: ' + text + '.';
-
-    if (text && text.length > 0) {
-        var wordCount = text.split(' ').filter(function (x) { return x; }).length;
-        result += '\n\nWord Count: ' + wordCount;
-
-        var characterCount = text.replace(/ /g, '').length;
-        result += '\n\nCharacter Count: ' + characterCount;
-
-        var spaceCount = text.split(' ').length - 1;
-        result += '\n\nSpace Count: ' + spaceCount;
-
-        var m = text.match(/[aeiou]/gi);
-        var vowelCount = m === null ? 0 : m.length;
-        result += '\n\nVowel Count: ' + vowelCount;
-    }
-
-    return result;
-}
-
-bot.on('conversationUpdate', function (message) {
-    if (message.membersAdded) {
-        message.membersAdded.forEach(function (identity) {
-            if (identity.id === message.address.bot.id) {
-                // var reply = new builder.Message()
-                //     .address(message.address)
-                //     .text('Hi! I am SpeechToText Bot. I can understand the content of any audio and convert it to text. Try sending me a wav file.');
-                // bot.send(reply);
-                msg = new builder.Message(session)
-                        .textFormat(builder.TextFormat.xml)
-                        .attachments([
-                                new builder.HeroCard(session)
-                        .title("Welcome to Meet Accenture Talent for Engagement (MATE)")
-                        .subtitle("I am a Smart resource management Bot")
-                        .text("The smart resource management Bot is a intelligent bot for PMs/SAs/TAs or TFS/Scheduler for resource management")
-                        .images([
-                            builder.CardImage.create(session, "https://thumbs.dreamstime.com/z/teamwork-handle-group-logo-22538327.jpg")
-                        ])
-                        .tap(builder.CardAction.openUrl(session, "https://en.wikipedia.org/wiki/Space_Needle"))
-                ]);
-                session.send(msg);
-            }
-        });
-    }
-});
 
 // dialog.onBegin(function (session, args, next) {
 //             msg = new builder.Message(session)
@@ -452,3 +405,59 @@ dialog.matches('EmailCandidate', [
 ]);
 
 dialog.onDefault(builder.DialogAction.send("I'm sorry I didn't understand. I can only search candidates."));
+
+    }
+
+});
+
+//=========================================================
+// Utilities
+//=========================================================
+function hasAudioAttachment(session) {
+    return session.message.attachments.length > 0 &&
+        (session.message.attachments[0].contentType === 'audio/wav' ||
+            session.message.attachments[0].contentType === 'application/octet-stream');
+}
+
+function getAudioStreamFromMessage (message){
+    var headers = {};
+    var attachment = message.attachments[0];
+
+    if (checkRequiresToken(message)) {
+
+        connector.getAccessToken(function(error, token){
+           
+            headers['Authorization']='Bearer ' + token;
+            headers['Content-Type'] ='application/octet-stream';
+
+            return needle.get(attachment.contentUrl, {headers : headers});
+        });
+    }
+    headers['Content-Type'] = attachment.contentType;
+    return needle.get(attachment.contentUrl, {headers : headers});
+}
+
+function checkRequiresToken(message) {
+    return message.source === 'skype' || message.source === 'msteams';
+}
+
+function processText(text) {
+    var result = 'You said: ' + text + '.';
+
+    if (text && text.length > 0) {
+        var wordCount = text.split(' ').filter(function (x) { return x; }).length;
+        result += '\n\nWord Count: ' + wordCount;
+
+        var characterCount = text.replace(/ /g, '').length;
+        result += '\n\nCharacter Count: ' + characterCount;
+
+        var spaceCount = text.split(' ').length - 1;
+        result += '\n\nSpace Count: ' + spaceCount;
+
+        var m = text.match(/[aeiou]/gi);
+        var vowelCount = m === null ? 0 : m.length;
+        result += '\n\nVowel Count: ' + vowelCount;
+    }
+
+    return result;
+}
